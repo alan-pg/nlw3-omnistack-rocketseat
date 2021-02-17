@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { Map, Marker, TileLayer, useLeaflet } from 'react-leaflet';
 import { useHistory } from "react-router-dom";
 
@@ -17,6 +17,11 @@ interface IData {
 
 export default function CreateOrphanage() {
     const leaf = useLeaflet()
+    const [userPosition, setUserPosition] = useState({
+        latitude: -22.922071843723177,
+        longitude: -43.22373524483933,
+        zoom: 7,
+      });
     const [getLatLng, setLatLng] = useState({ lat: 0, lng: 0 });
 
     const [getName, setName] = useState('');
@@ -87,6 +92,21 @@ export default function CreateOrphanage() {
         }
     }
 
+    function success(pos: GeolocationPosition) {
+        setUserPosition({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+          zoom: 15,
+        });
+      }
+    
+      useEffect(() => {
+        navigator.geolocation.getCurrentPosition(success, undefined, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+        });
+      }, []);
+
     return (
         <Container>
             
@@ -98,10 +118,11 @@ export default function CreateOrphanage() {
                         <legend>Dados</legend>
 
                         <Map
-                            center={[-22.913885,-43.7261859]}
+                            center={[userPosition.latitude, userPosition.longitude]}
                             style={{ width: '100%', height: 280 }}
-                            zoom={10}
+                            zoom={userPosition.zoom}
                             onclick={(event) => setLatLng(event.latlng)}
+                            useFlyTo={true}
                         >
                             <TileLayer
                                 url={`https://a.tile.openstreetmap.org/{z}/{x}/{y}.png`}
